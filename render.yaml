@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: binary-bastion
+    runtime: node
+    # Build Command: Go to backend, install all deps, then build frontend
+    buildCommand: cd backend && npm install && npm run build
+    # Start Command: Go to backend and start server
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
