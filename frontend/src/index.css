@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+    --color-cyber-black: #050a10;
+    --color-cyber-green: #00ff41;
+    --color-cyber-dark: #001100;
+    --font-cyber: "Courier New", Courier, monospace;
+}
+
+body {
+    background-color: var(--color-cyber-black);
+    color: var(--color-cyber-green);
+    font-family: var(--font-cyber);
+}
