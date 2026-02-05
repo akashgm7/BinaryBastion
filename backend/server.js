@@ -71,7 +71,7 @@ const io = new Server(server, {
     }
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const TICK_RATE = 20; // Ticks per second
 const TICK_INTERVAL = 1000 / TICK_RATE;
 
