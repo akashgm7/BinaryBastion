@@ -8,8 +8,8 @@ const UNIT_TYPES = {
 };
 
 const TOWER_STATS = {
-    PRINCESS: { hp: 350, damage: 10, range: 150, fireRate: 800 },
-    KING: { hp: 1000, damage: 15, range: 150, fireRate: 1000 }
+    PRINCESS: { hp: 500, damage: 10, range: 200, fireRate: 800 },
+    KING: { hp: 1000, damage: 15, range: 200, fireRate: 1000 }
 };
 
 module.exports = {
@@ -152,7 +152,7 @@ module.exports = {
         // 1. Passive Income
         Object.values(this.gameState.playerData).forEach(p => {
             if (now - p.lastIncome >= 1000) {
-                if (p.gold < p.maxGold) p.gold += 2;
+                if (p.gold < p.maxGold) p.gold += 5;
                 p.lastIncome = now;
             }
         });
@@ -200,7 +200,9 @@ module.exports = {
 
                 if (dist <= attackRange) {
                     // Attack
-                    if (now - unit.lastAttack > unit.cooldown) {
+                    const cd = unit.cooldown || 1000;
+                    if (now - unit.lastAttack > cd) {
+                        console.log(`Unit ${unit.id} attacking ${target.id || 'Unit'}`);
                         target.hp -= unit.damage;
                         unit.lastAttack = now;
                         // Visual
@@ -244,6 +246,7 @@ module.exports = {
                 });
 
                 if (target) {
+                    // console.log(`Tower ${tower.id} firing at ${target.id}`);
                     target.hp -= tower.damage;
                     tower.lastShot = now;
                     // Visual

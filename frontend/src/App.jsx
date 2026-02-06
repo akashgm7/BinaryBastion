@@ -281,7 +281,7 @@ function App() {
           <span className="text-yellow-400 text-2xl font-bold drop-shadow-md">
             ${Math.floor(myData?.gold || 0)}
           </span>
-          <span className="text-xs text-gray-400 block">+2/sec</span>
+          <span className="text-xs text-gray-400 block">+5/sec</span>
         </div>
       </div>
 
