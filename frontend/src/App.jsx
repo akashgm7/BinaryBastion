@@ -19,8 +19,12 @@ function App() {
   const [usernameInput, setUsernameInput] = useState('');
 
   const [isConnected, setIsConnected] = useState(socket.connected);
-  const [gameState, setGameState] = useState(null);
+  // OPTIMIZATION: Removed strict dependency on full gameState for re-renders
+  // const [gameState, setGameState] = useState(null); 
   const [myRole, setMyRole] = useState(null);
+
+  // UI State for things that need to update the DOM (Gold, Winner)
+  const [uiStats, setUiStats] = useState({ gold: 0, winner: null });
 
   const [selectedCard, setSelectedCard] = useState(null);
 
@@ -32,16 +36,33 @@ function App() {
     socket.on('connect', () => setIsConnected(true));
     socket.on('disconnect', () => setIsConnected(false));
     socket.on('init', (data) => setMyRole(data.role));
-    socket.on('gameState', (state) => {
-      setGameState(state);
-      gameStateRef.current = state;
-    });
-    return () => socket.removeAllListeners();
-  }, []);
 
+    socket.on('gameState', (state) => {
+      // 1. Always update Ref for the 60fps Canvas Loop (no re-render)
+      gameStateRef.current = state;
+
+      // 2. Selectively update React State only if values CHANGED
+      // This prevents 20 re-renders per second!
+      const myId = socket.id;
+      const myData = state.playerData?.[myId];
+      const newGold = Math.floor(myData?.gold || 0);
+      const newWinner = state.winner;
+
+      setUiStats(prev => {
+        if (prev.gold !== newGold || prev.winner !== newWinner) {
+          return { gold: newGold, winner: newWinner };
+        }
+        return prev;
+      });
+    });
+
+    return () => socket.removeAllListeners();
+  }, []); // Run once
+
+  // Winner Check Effect using optimized state
   useEffect(() => {
-    if (gameState?.winner && screen === 'game') {
-      const winnerName = gameState.winner;
+    if (uiStats.winner && screen === 'game') {
+      const winnerName = uiStats.winner;
       setScreen('results');
 
       if (user && user.id) {
@@ -58,7 +79,7 @@ function App() {
         }
       }
     }
-  }, [gameState?.winner]);
+  }, [uiStats.winner]);
 
   const login = (name) => {
     if (!name) return;
@@ -252,7 +273,7 @@ function App() {
     return (
       <div className="min-h-screen bg-black text-green-500 flex flex-col items-center justify-center font-mono">
         <h1 className="text-6xl font-bold mb-4 animate-bounce text-center">
-          {gameState?.winner}<br />VICTORY
+          {uiStats?.winner}<br />VICTORY
         </h1>
         <div className="text-2xl mb-8 text-white">
           MISSION COMPLETE
@@ -267,7 +288,7 @@ function App() {
     )
   }
 
-  const myData = gameState?.playerData?.[socket.id];
+  // const myData = gameState?.playerData?.[socket.id]; // REMOVED
 
   return (
     <div className="min-h-screen bg-gray-950 text-green-500 font-mono flex flex-col items-center">
@@ -279,7 +300,7 @@ function App() {
         </div>
         <div className="text-right">
           <span className="text-yellow-400 text-2xl font-bold drop-shadow-md">
-            ${Math.floor(myData?.gold || 0)}
+            ${uiStats.gold}
           </span>
           <span className="text-xs text-gray-400 block">+5/sec</span>
         </div>
@@ -301,7 +322,7 @@ function App() {
       {/* CARD DECK */}
       <div className="w-[800px] mt-2 flex gap-2 h-32">
         {CARDS.map(card => {
-          const canAfford = myData && myData.gold >= card.cost;
+          const canAfford = uiStats.gold >= card.cost;
           return (
             <button
               key={card.id}
