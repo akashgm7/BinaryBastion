@@ -3,8 +3,8 @@ import io from 'socket.io-client';
 
 // Auto-detect URL: If running locally (port 5173), use localhost:3000. 
 // If deployed (same origin), use relative path.
-const SOCKET_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '/';
-const socket = io(SOCKET_URL);
+const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+const socket = io(API_BASE || '/');
 
 // Card Config
 const CARDS = [
@@ -50,7 +50,7 @@ function App() {
         if (myRole === 'p2') result = winnerName === 'Player 2' ? 'win' : 'loss';
 
         if (result !== 'spectator') {
-          fetch('http://localhost:3000/api/report-result', {
+          fetch(`${API_BASE}/api/report-result`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: user.id, result })
@@ -62,7 +62,7 @@ function App() {
 
   const login = (name) => {
     if (!name) return;
-    fetch('http://localhost:3000/api/login', {
+    fetch(`${API_BASE}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: name })
@@ -258,7 +258,7 @@ function App() {
           MISSION COMPLETE
         </div>
         <button
-          onClick={() => { fetch('http://localhost:3000/reset', { method: 'POST' }).then(() => window.location.reload()) }}
+          onClick={() => { fetch(`${API_BASE}/reset`, { method: 'POST' }).then(() => window.location.reload()) }}
           className="bg-red-600 hover:bg-red-500 text-white px-8 py-4 font-bold rounded shadow-[0_0_20px_red]"
         >
           RESET SIMULATION
@@ -326,7 +326,7 @@ function App() {
         })}
 
         <button
-          onClick={() => { fetch('http://localhost:3000/reset', { method: 'POST' }).then(() => window.location.reload()) }}
+          onClick={() => { fetch(`${API_BASE}/reset`, { method: 'POST' }).then(() => window.location.reload()) }}
           className="w-20 border border-red-900 bg-red-950/30 text-red-600 text-[10px] font-bold hover:bg-red-900 hover:text-white transition-colors flex items-center justify-center p-1"
         >
           FORCE<br />RESET
